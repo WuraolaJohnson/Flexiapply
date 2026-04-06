@@ -7,7 +7,9 @@ import Button from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 
 export default function Login() {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const emailValue = watch('email');
+  const isEmailValid = emailValue && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue);
   const { login, signupAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,9 +62,9 @@ export default function Login() {
           </CardTitle>
           <p className="text-sm text-center text-slate-500 mt-2">
             {isAdminLogin ? (
-              isSignUp ? <>Create a new administrator account securely.</> : <>Use an email containing <strong>admin</strong> and any password for Admin access.</>
+              isSignUp ? <>Create a new administrator account securely.</> : <>Sign in to access student applications and manage admissions.</>
             ) : (
-              <>Try any email and password <strong>password123</strong>. Use an email containing <strong>admin</strong> for Admin access.</>
+              <>Sign in to your account to continue your application process.</>
             )}
           </p>
         </CardHeader>
@@ -79,8 +81,15 @@ export default function Login() {
             <Input 
               label="Email Address" 
               type="email" 
-              {...register('email', { required: 'Email is required' })} 
+              {...register('email', { 
+                required: 'Email is required',
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: 'Invalid email format'
+                }
+              })} 
               error={errors.email?.message} 
+              success={isEmailValid}
             />
             <Input 
               label="Password" 

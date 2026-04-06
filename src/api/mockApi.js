@@ -65,7 +65,15 @@ const handleMockRequest = (config) => {
       result = result?.find(item => String(item.id) === String(id));
     } else if (Object.keys(combinedParams).length > 0) {
       result = result?.filter(item => {
-        return Object.entries(combinedParams).every(([key, value]) => String(item[key]) === String(value));
+        return Object.entries(combinedParams).every(([key, value]) => {
+          const itemValue = String(item[key]);
+          const paramValue = String(value);
+          // Case-insensitive matching for emails
+          if (key.toLowerCase() === 'email') {
+            return itemValue.toLowerCase() === paramValue.toLowerCase();
+          }
+          return itemValue === paramValue;
+        });
       });
     }
     return { data: result || (id ? null : []), status: 200, config };
