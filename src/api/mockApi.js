@@ -42,6 +42,11 @@ const handleMockRequest = (config) => {
   const data = getMergedData();
   const method = (config.method || 'get').toLowerCase();
   
+  // Extract query params from URL if they exist
+  const searchParams = new URLSearchParams(config.url.split('?')[1] || '');
+  const urlParams = Object.fromEntries(searchParams.entries());
+  const combinedParams = { ...urlParams, ...config.params };
+  
   // Robust URL cleaning
   const urlPath = config.url.split('?')[0]; // Remove query params for resource matching
   const cleanUrl = urlPath.replace(/^\/api\//, '').replace(/^\//, ''); 
@@ -58,9 +63,9 @@ const handleMockRequest = (config) => {
     let result = data[resource];
     if (id) {
       result = result?.find(item => String(item.id) === String(id));
-    } else if (config.params) {
+    } else if (Object.keys(combinedParams).length > 0) {
       result = result?.filter(item => {
-        return Object.entries(config.params).every(([key, value]) => String(item[key]) === String(value));
+        return Object.entries(combinedParams).every(([key, value]) => String(item[key]) === String(value));
       });
     }
     return { data: result || (id ? null : []), status: 200, config };
