@@ -13,75 +13,80 @@ const saveStorageData = (data) => {
   localStorage.setItem('safapply_db', JSON.stringify(data));
 };
 
-// Check if we should use the real API or the mock
-// We use the mock if we're in production or if the user explicitly wants to (or if API fails)
-const isProduction = import.meta.env.PROD;
-
 const mockApi = axios.create({
   baseURL: '/api',
 });
 
-// Interceptor to handle requests locally if needed
-mockApi.interceptors.request.use(async (config) => {
-  // Always add a small delay for better UX (showing loaders)
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  // In production or if no backend is detected, we handle requests locally
-  if (isProduction || !window.location.hostname.includes('localhost')) {
-    const data = getStorageData();
-    const url = config.url.replace(/^\//, ''); // remove leading slash
-    const [resource, id] = url.split('/');
-    
-    // Simple GET logic
-    if (config.method === 'get') {
-      let result = data[resource];
-      
-      // Handle ID-based selection
-      if (id) {
-        result = result.find(item => item.id === id);
-      } 
-      // Handle query params (like ?email=...)
-      else if (config.params) {
-        result = result.filter(item => {
-          return Object.entries(config.params).every(([key, value]) => item[key] === value);
-        });
-      }
-
-      return Promise.resolve({ data: result, status: 200, config });
-    }
-
-    // Simple POST logic
-    if (config.method === 'post') {
-      const newItem = { ...config.data, id: config.data.id || Math.random().toString(36).substr(2, 9) };
-      data[resource].push(newItem);
-      saveStorageData(data);
-      return Promise.resolve({ data: newItem, status: 201, config });
-    }
-    
-    // Simple PUT/PATCH logic
-    if (config.method === 'put' || config.method === 'patch') {
-      const index = data[resource].findIndex(item => item.id === id);
-      if (index !== -1) {
-        data[resource][index] = { ...data[resource][index], ...config.data };
-        saveStorageData(data);
-        return Promise.resolve({ data: data[resource][index], status: 200, config });
-      }
-    }
+// Helper for Mock Responses
+const handleMockRequest = (config) => {
+  const data = getStorageData();
+  // Strip the /api prefix if it exists, and any leading slashes
+  const cleanUrl = config.url.replace(/^\/api\//, '').replace(/^\//, ''); 
+  const [resource, id] = cleanUrl.split('/');
+  
+  if (!data[resource]) {
+    console.warn(`[MockAPI] Resource "${resource}" not found in initialData. URL: ${config.url}`);
+    return null;
   }
 
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+  console.info(`[MockAPI] Serving ${config.method.toUpperCase()} /${resource}${id ? '/' + id : ''} from local storage`);
 
-// Fallback for failed requests (e.g. 404/ECONNREFUSED in dev)
+  if (config.method === 'get') {
+    let result = data[resource];
+    if (id) {
+      result = result?.find(item => item.id === id);
+    } else if (config.params) {
+      result = result?.filter(item => {
+        return Object.entries(config.params).every(([key, value]) => item[key] === value);
+      });
+    }
+    return { data: result, status: 200, config };
+  }
+
+  if (config.method === 'post') {
+    const newItem = { ...config.data, id: config.data.id || Math.random().toString(36).substr(2, 9) };
+    if (!data[resource]) data[resource] = [];
+    data[resource].push(newItem);
+    saveStorageData(data);
+    return { data: newItem, status: 201, config };
+  }
+
+  if (config.method === 'put' || config.method === 'patch') {
+    const index = data[resource]?.findIndex(item => item.id === id);
+    if (index !== -1 && data[resource]) {
+      data[resource][index] = { ...data[resource][index], ...config.data };
+      saveStorageData(data);
+      return { data: data[resource][index], status: 200, config };
+    }
+  }
+  
+  return null;
+};
+
+// Check if we should force mock even before attempting (for production)
+const isProduction = import.meta.env.PROD;
+const forceMock = isProduction || !window.location.hostname.includes('localhost');
+
+mockApi.interceptors.request.use(async (config) => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  if (forceMock) {
+    const mockRes = handleMockRequest(config);
+    if (mockRes) return Promise.resolve(mockRes);
+  }
+  
+  return config;
+}, (error) => Promise.reject(error));
+
+// Fallback for failed requests (e.g. 404 or Network Error)
 mockApi.interceptors.response.use(
   response => response,
   async (error) => {
-    if (error.code === 'ECONNREFUSED' || error.response?.status === 404 || error.message.includes('Network Error')) {
-      console.warn("API unavailable, switching to local mock data.");
-      // Logic would be similar to the request interceptor but for error recovery
-      // For simplicity, we recommend using the request interceptor approach above.
+    // If the request fails (404, connection error, etc.), fallback to mock
+    if (error.code === 'ERR_NETWORK' || error.response?.status === 404 || error.code === 'ECONNREFUSED') {
+      console.warn(`[MockAPI] Network call to ${error.config.url} failed. Falling back to local data...`);
+      const mockRes = handleMockRequest(error.config);
+      if (mockRes) return Promise.resolve(mockRes);
     }
     return Promise.reject(error);
   }
