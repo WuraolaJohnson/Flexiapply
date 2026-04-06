@@ -1,16 +1,35 @@
 import axios from 'axios';
 import { initialData } from './initialData';
 
-// Helper to get data from localStorage or initialData
-const getStorageData = () => {
+// Self-healing data store: Merge static data with any existing dynamic user data
+const getMergedData = () => {
+  let stored = {};
   try {
-    const stored = localStorage.getItem('safapply_db');
-    if (stored) return JSON.parse(stored);
+    const raw = localStorage.getItem('safapply_db');
+    if (raw) stored = JSON.parse(raw);
   } catch (e) {
     console.error("[MockAPI] Failed to parse localStorage", e);
   }
-  localStorage.setItem('safapply_db', JSON.stringify(initialData));
-  return initialData;
+
+  // CORE FIX: Always ensure institutions and programs are populated from the bundle if they are missing or empty
+  const institutions = (initialData.institutions && initialData.institutions.length > 0) 
+    ? initialData.institutions 
+    : (stored.institutions || []);
+    
+  const programs = (initialData.programs && initialData.programs.length > 0) 
+    ? initialData.programs 
+    : (stored.programs || []);
+
+  const merged = {
+    ...initialData,    // Default to the full bundle
+    ...stored,         // Override with user's local data (like apps and logins)
+    institutions,      // Force the bundled institutions to ensure they are never empty
+    programs           // Force the bundled programs to ensure they are never empty
+  };
+
+  // Sync back to storage to ensure future calls are consistent
+  localStorage.setItem('safapply_db', JSON.stringify(merged));
+  return merged;
 };
 
 const saveStorageData = (data) => {
@@ -25,20 +44,19 @@ const mockApi = axios.create({
 const handleMockRequest = (config) => {
   if (!config || !config.url) return null;
   
-  const data = getStorageData();
+  const data = getMergedData();
   const method = (config.method || 'get').toLowerCase();
   
   // Strip the /api prefix if it exists, and any leading slashes
   const cleanUrl = config.url.replace(/^\/api\//, '').replace(/^\//, ''); 
   const [resource, id] = cleanUrl.split('/');
   
-  // Basic guard for missing resource keys
-  if (!data[resource] && !id) {
-    console.warn(`[MockAPI] Resource "${resource}" not found in initialData. URL: ${config.url}`);
-    return { data: [], status: 200, config }; // Return empty list instead of null to prevent component crashes
+  if (!data[resource]) {
+    console.warn(`[MockAPI] Resource "${resource}" not found in current data store. URL: ${config.url}`);
+    return { data: [], status: 200, config };
   }
 
-  console.info(`[MockAPI] Serving ${method.toUpperCase()} /${resource}${id ? '/' + id : ''} from local storage`);
+  console.info(`[MockAPI] Delivering ${method.toUpperCase()} /${resource}${id ? '/' + id : ''} from guaranteed static-first store`);
 
   if (method === 'get') {
     let result = data[resource];
