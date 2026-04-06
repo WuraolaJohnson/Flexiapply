@@ -15,7 +15,7 @@ const schema = yup.object().shape({
   dob: yup.string().required('Date of birth is required'),
 });
 
-export default function PersonalDetails({ defaultValues, onNext }) {
+export default function PersonalDetails({ defaultValues, onNext, onBack }) {
   const { register, handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues
@@ -71,7 +71,8 @@ export default function PersonalDetails({ defaultValues, onNext }) {
           )}
         />
       </div>
-      <div className="flex justify-end pt-4">
+      <div className="flex justify-between pt-4">
+        <Button type="button" variant="outline" onClick={onBack}>Back</Button>
         <Button type="submit">Next Step</Button>
       </div>
     </form>

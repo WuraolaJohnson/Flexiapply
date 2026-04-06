@@ -1,12 +1,29 @@
 import Button from '../ui/Button';
 import { Card, CardContent } from '../ui/Card';
 
-export default function ReviewSubmit({ formData, onBack, onSubmit, isSubmitting }) {
+export default function ReviewSubmit({ formData, onBack, onSubmit, isSubmitting, selectedProgram, selectedInstitution }) {
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-100">Review Your Application</h3>
       
       <div className="space-y-4">
+        {/* Programme Selection Summary */}
+        {selectedProgram && (
+          <Card>
+            <CardContent className="pt-6">
+              <h4 className="font-semibold text-primary mb-2">Programme Applied For</h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <span className="text-slate-500">Institution:</span>
+                <span className="text-slate-800 dark:text-slate-200">{selectedInstitution?.name || '—'}</span>
+                <span className="text-slate-500">Course:</span>
+                <span className="text-slate-800 dark:text-slate-200 font-medium">{selectedProgram.name}</span>
+                <span className="text-slate-500">Duration:</span>
+                <span className="text-slate-800 dark:text-slate-200">{selectedProgram.duration}</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardContent className="pt-6">
             <h4 className="font-semibold text-primary mb-2">Personal Details</h4>
@@ -52,3 +69,4 @@ export default function ReviewSubmit({ formData, onBack, onSubmit, isSubmitting 
     </div>
   );
 }
+

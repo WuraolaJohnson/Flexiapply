@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Stepper from '../components/ui/Stepper';
+import ProgramSelection from '../components/forms/ProgramSelection';
 import PersonalDetails from '../components/forms/PersonalDetails';
 import AcademicInfo from '../components/forms/AcademicInfo';
 import GuardianDetails from '../components/forms/GuardianDetails';
@@ -12,6 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { calculateAdmissionScore } from '../utils/scoreCalculator';
 
 const STEPS = [
+  { title: 'Program' },
   { title: 'Personal Details' },
   { title: 'Academic Info' },
   { title: 'Guardian Details' },
@@ -28,6 +30,7 @@ export default function ApplicationForm() {
   const location = useLocation();
   const { user, login } = useAuth();
 
+  // Pre-fill from URL params (when coming from institution detail page)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const programId = params.get('programId');
@@ -42,6 +45,8 @@ export default function ApplicationForm() {
           ]);
           setSelectedProgram(progRes.data);
           setSelectedInstitution(instRes.data);
+          // Skip program selection step if coming pre-filled
+          setCurrentStep(1);
         } catch (error) {
           console.error("Failed to fetch pre-fill details", error);
         }
@@ -49,6 +54,13 @@ export default function ApplicationForm() {
       fetchProgramDetails();
     }
   }, [location.search]);
+
+  // Step 0: Program selected
+  const handleProgramNext = ({ institution, program }) => {
+    setSelectedInstitution(institution);
+    setSelectedProgram(program);
+    setCurrentStep(1);
+  };
 
   const handleNext = (step, data) => {
     updateFormData(step, data);
@@ -74,6 +86,7 @@ export default function ApplicationForm() {
           
           if (!existingUser.data || existingUser.data.length === 0) {
             await mockApi.post('/users', {
+              id: Math.random().toString(36).substr(2, 9),
               email: formData.personal.email,
               password: formData.personal.password,
               role: 'APPLICANT',
@@ -90,6 +103,7 @@ export default function ApplicationForm() {
         ...formData,
         programId: selectedProgram?.id,
         programName: selectedProgram?.name,
+        institutionId: selectedInstitution?.id,
         institutionName: selectedInstitution?.name,
         userId: currentUserId,
         status: 'Pending',
@@ -110,6 +124,7 @@ export default function ApplicationForm() {
 
   return (
     <div className="max-w-3xl mx-auto w-full py-8">
+      {/* Programme banner — shown once a programme is selected */}
       {selectedProgram && (
         <div className="mb-8 p-6 bg-slate-900 text-white rounded-3xl shadow-xl border border-white/10 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -128,31 +143,43 @@ export default function ApplicationForm() {
       <Card className="mt-8">
         <CardContent className="pt-8">
           {currentStep === 0 && (
-            <PersonalDetails 
-              defaultValues={formData.personal} 
-              onNext={(data) => handleNext('personal', data)} 
+            <ProgramSelection
+              defaultSelection={{
+                institutionId: selectedInstitution?.id,
+                programId: selectedProgram?.id,
+              }}
+              onNext={handleProgramNext}
             />
           )}
           {currentStep === 1 && (
+            <PersonalDetails 
+              defaultValues={formData.personal} 
+              onNext={(data) => handleNext('personal', data)}
+              onBack={handleBack}
+            />
+          )}
+          {currentStep === 2 && (
             <AcademicInfo 
               defaultValues={formData.academic} 
               onNext={(data) => handleNext('academic', data)}
               onBack={handleBack}
             />
           )}
-          {currentStep === 2 && (
+          {currentStep === 3 && (
             <GuardianDetails 
               defaultValues={formData.guardian} 
               onNext={(data) => handleNext('guardian', data)}
               onBack={handleBack}
             />
           )}
-          {currentStep === 3 && (
+          {currentStep === 4 && (
             <ReviewSubmit 
               formData={formData} 
               onBack={handleBack} 
               onSubmit={handleSubmitApplication}
               isSubmitting={isSubmitting}
+              selectedProgram={selectedProgram}
+              selectedInstitution={selectedInstitution}
             />
           )}
         </CardContent>
@@ -160,4 +187,3 @@ export default function ApplicationForm() {
     </div>
   );
 }
-
