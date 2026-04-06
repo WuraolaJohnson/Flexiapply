@@ -34,10 +34,6 @@ const saveStorageData = (data) => {
   } catch (e) {}
 };
 
-const mockApi = axios.create({
-  baseURL: '/api',
-});
-
 // Helper for Mock Responses
 const handleMockRequest = (config) => {
   // EXTREME SAFETY: If config or URL is missing, abort mock
@@ -94,35 +90,29 @@ const handleMockRequest = (config) => {
 const isProduction = import.meta.env.PROD;
 const forceMock = isProduction || !window.location.hostname.includes('localhost');
 
-mockApi.interceptors.request.use(async (config) => {
+// Robust Custom Adapter Implementation
+const customAdapter = async (config) => {
   if (forceMock) {
     try {
       const mockRes = handleMockRequest(config);
-      if (mockRes) return Promise.resolve(mockRes);
-    } catch (e) {
-      console.error("[MockAPI] Request interceptor error", e);
-    }
-  }
-  return config;
-}, (error) => Promise.reject(error));
-
-// Fallback for failed requests
-mockApi.interceptors.response.use(
-  response => response,
-  async (error) => {
-    // Comprehensive error check
-    const shouldFallback = !error.response || error.code === 'ERR_NETWORK' || error.response.status === 404;
-    
-    if (shouldFallback && error.config) {
-      try {
-        const mockRes = handleMockRequest(error.config);
-        if (mockRes) return Promise.resolve(mockRes);
-      } catch (e) {
-        console.error("[MockAPI] Response fallback error", e);
+      if (mockRes) {
+        // Return a completed response promise, bypassing the actual network stack
+        return Promise.resolve(mockRes);
       }
+    } catch (e) {
+      console.warn("[MockAPI] Adapter mock failed:", e);
     }
-    return Promise.reject(error);
   }
-);
+  
+  // Create a fresh instance for the real request to get the default adapter
+  // This avoids recursive calls to our custom adapter
+  const xhrConfig = { ...config, adapter: undefined };
+  return axios(xhrConfig);
+};
+
+const mockApi = axios.create({
+  baseURL: '/api',
+  adapter: customAdapter
+});
 
 export default mockApi;
