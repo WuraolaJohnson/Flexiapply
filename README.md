@@ -1,16 +1,48 @@
-# React + Vite
+# FlexiApply — Admissions Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+FlexiApply is a modern web-based admissions portal that allows students to discover institutions, browse programs, and submit applications — while giving administrators a dedicated dashboard to review and manage those applications.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Frontend:** React + Vite
+- **Styling:** Tailwind CSS
+- **Routing:** React Router DOM
+- **Forms:** React Hook Form
+- **Mock Backend:** JSON Server (`db.json`)
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+## User Roles
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+| Role    | Access                                              |
+|---------|-----------------------------------------------------|
+| Student | Browse institutions, apply to programs, view status |
+| Admin   | Review applications, manage student records         |
+
+## Admin Registration
+
+To register a new administrator account, navigate to the **Admin Login** page and click **"Register as Admin"**.
+
+You will be prompted to enter an **Admin Passcode** in addition to your name, email, and password. Without the correct passcode, registration will be denied.
+
+> **Admin Passcode:** `admin1`
+
+Keep this passcode confidential. Only share it with trusted personnel who should have admin access.
+
+## Project Structure
+
+```
+src/
+├── api/          # Mock API and initial data
+├── components/   # Reusable UI components
+├── context/      # Auth context and providers
+├── hooks/        # Custom React hooks
+├── pages/        # Route-level page components
+└── utils/        # Utility helpers
+```
+Vercel link: https://flexiapply.vercel.app/

@@ -19,11 +19,16 @@ export default function Login() {
   const [authError, setAuthError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const ADMIN_PASSCODE = 'admin1';
+
   const onSubmit = async (data) => {
     setAuthError('');
     setLoading(true);
     try {
       if (isAdminLogin && isSignUp) {
+        if (data.adminPasscode !== ADMIN_PASSCODE) {
+          throw new Error("Invalid admin passcode. Please check the README file for the correct code.");
+        }
         if (data.password !== data.confirmPassword) {
           throw new Error("Passwords do not match. Please try again.");
         }
@@ -103,6 +108,15 @@ export default function Login() {
                 type="password" 
                 {...register('confirmPassword', { required: 'Please confirm your password' })} 
                 error={errors.confirmPassword?.message} 
+              />
+            )}
+            {isAdminLogin && isSignUp && (
+              <Input 
+                label="Admin Passcode" 
+                type="password" 
+                placeholder="Enter the admin registration code"
+                {...register('adminPasscode', { required: 'Admin passcode is required' })} 
+                error={errors.adminPasscode?.message} 
               />
             )}
             {authError && <div className="text-sm text-red-500 font-medium bg-red-50 dark:bg-red-900/20 p-2 border border-red-100 dark:border-red-900/30 rounded">{authError}</div>}
