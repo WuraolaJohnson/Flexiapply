@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       setLoading(false);
-      throw error.message || 'Login failed';
+      throw error instanceof Error ? error : new Error(error || 'Login failed');
     }
   };
 
@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }) => {
       }
       
       const newUser = {
+        id: Math.random().toString(36).substr(2, 9),
         email,
         password,
         role: 'ADMIN',
@@ -56,14 +57,17 @@ export const AuthProvider = ({ children }) => {
       
       const res = await mockApi.post('/users', newUser);
       const createdUser = res.data;
+
+      // Guard: ensure the API returned a valid user object (has email + role)
+      const validUser = createdUser && createdUser.email ? createdUser : newUser;
       
-      setUser(createdUser);
-      localStorage.setItem('user', JSON.stringify(createdUser));
+      setUser(validUser);
+      localStorage.setItem('user', JSON.stringify(validUser));
       setLoading(false);
-      return { success: true, role: createdUser.role };
+      return { success: true, role: validUser.role };
     } catch (error) {
       setLoading(false);
-      throw error.message || 'Signup failed';
+      throw error instanceof Error ? error : new Error(error || 'Signup failed');
     }
   };
 

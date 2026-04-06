@@ -34,6 +34,15 @@ const saveStorageData = (data) => {
   } catch (e) {}
 };
 
+// Safely parse request body (Axios serializes data to JSON string before adapter runs)
+const parseBody = (data) => {
+  if (!data) return {};
+  if (typeof data === 'string') {
+    try { return JSON.parse(data); } catch (e) { return {}; }
+  }
+  return data;
+};
+
 // Helper for Mock Responses
 const handleMockRequest = (config) => {
   // EXTREME SAFETY: If config or URL is missing, abort mock
@@ -80,7 +89,8 @@ const handleMockRequest = (config) => {
   }
 
   if (method === 'post') {
-    const newItem = { ...config.data, id: config.data?.id || Math.random().toString(36).substr(2, 9) };
+    const body = parseBody(config.data);
+    const newItem = { ...body, id: body?.id || Math.random().toString(36).substr(2, 9) };
     if (!data[resource]) data[resource] = [];
     data[resource].push(newItem);
     saveStorageData(data);
@@ -88,9 +98,10 @@ const handleMockRequest = (config) => {
   }
 
   if (method === 'put' || method === 'patch') {
+    const body = parseBody(config.data);
     const index = data[resource]?.findIndex(item => String(item.id) === String(id));
     if (index !== -1 && data[resource]) {
-      data[resource][index] = { ...data[resource][index], ...config.data };
+      data[resource][index] = { ...data[resource][index], ...body };
       saveStorageData(data);
       return { data: data[resource][index], status: 200, config };
     }

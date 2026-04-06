@@ -47,7 +47,7 @@ export default function Login() {
         }
       }
     } catch (err) {
-      setAuthError(err.message || err || "Authentication failed");
+      setAuthError(err instanceof Error ? err.message : (err || "Authentication failed"));
     } finally {
       setLoading(false);
     }
