@@ -32,8 +32,8 @@ export default function LandingPage() {
   }, []);
 
   const filteredInstitutions = institutions.filter(inst => {
-    const matchesSearch = inst.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         inst.shortName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = inst.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inst.shortName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || inst.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -45,7 +45,7 @@ export default function LandingPage() {
         {/* Abstract Background patterns */}
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
-        
+
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
             Find your path to <span className="text-primary-light">success</span>
@@ -53,7 +53,7 @@ export default function LandingPage() {
           <p className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
             Discover and apply to top institutions and programs across the country. Your future starts here.
           </p>
-          
+
           <div className="max-w-2xl mx-auto bg-white/5 backdrop-blur-xl p-4 md:p-6 rounded-[2.5rem] border border-white/10 shadow-2xl">
             <div className="flex flex-col items-center gap-4">
               <div className="w-full relative group">
@@ -62,7 +62,7 @@ export default function LandingPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
-                <input 
+                <input
                   type="text"
                   placeholder="Search for institution or program..."
                   className="w-full pl-14 pr-6 py-5 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent text-white placeholder-slate-400 text-lg transition-all outline-none"
@@ -85,17 +85,16 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Explore Institutions</h2>
             <p className="text-slate-500 dark:text-slate-400">Find the right organization for your academic journey</p>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                  selectedCategory === cat 
-                  ? 'bg-primary text-slate-900 shadow-md' 
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${selectedCategory === cat
+                    ? 'bg-primary text-slate-900 shadow-md'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
               >
                 {cat}
               </button>
@@ -113,16 +112,16 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredInstitutions.length > 0 ? (
               filteredInstitutions.map(inst => (
-                <Card 
-                  key={inst.id} 
+                <Card
+                  key={inst.id}
                   className="group hover:border-primary/50 hover:shadow-2xl transition-all duration-500 rounded-[2rem] border-none bg-white dark:bg-slate-900 cursor-pointer h-full flex flex-col shadow-lg shadow-slate-200/50 dark:shadow-none"
                   onClick={() => navigate(`/institution/${inst.id}`)}
                 >
                   <CardContent className="p-0 flex flex-col h-full">
                     <div className="h-40 bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-8 rounded-t-[2rem] border-2 border-primary/20 dark:border-primary/10 group-hover:border-primary transition-all duration-500 relative overflow-hidden">
-                      <img 
-                        src={inst.logo} 
-                        alt={inst.name} 
+                      <img
+                        src={inst.logo}
+                        alt={inst.name}
                         className="max-h-24 max-w-24 object-contain rounded-2xl drop-shadow-2xl relative z-10 transition-transform duration-500 group-hover:scale-110"
                         onError={(e) => {
                           e.target.src = `https://ui-avatars.com/api/?name=${inst.shortName}&background=random&size=128`;
@@ -188,7 +187,7 @@ export default function LandingPage() {
           <span className="text-2xl font-black">UNIVERSITY PLAZA</span>
           <span className="text-2xl font-black">ACADEMIA</span>
           <span className="text-2xl font-black">EDUCATE</span>
-          <span className="text-2xl font-black">SCHOLR</span>
+          <span className="text-2xl font-black">SCHOLAR</span>
         </div>
       </section>
     </div>
