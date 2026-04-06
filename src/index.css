@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark, .dark *));
+
+@theme {
+  --color-primary: #0089ba;
+  --color-primary-dark: #006b91;
+  --color-primary-light: #47b9e0;
+  --color-background-light: #f8fafc;
+  --color-background-dark: #0f172a;
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #1e293b;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background-light);
+    color: var(--color-slate-800);
+    transition-property: color, background-color;
+    transition-duration: 300ms;
+    -webkit-font-smoothing: antialiased;
+    font-family: var(--font-sans);
+  }
+  
+  .dark body {
+    background-color: var(--color-background-dark);
+    color: var(--color-slate-100);
+  }
+}
+
+@import 'react-datepicker/dist/react-datepicker.css';
+@import 'react-phone-number-input/style.css';
+
+@layer components {
+  .PhoneInput {
+    @apply flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-1 text-sm focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent dark:border-slate-700 transition-all;
+  }
+  .PhoneInputInput {
+    @apply bg-transparent outline-none border-none focus:ring-0 px-2 py-0 h-full w-full dark:text-slate-50 text-slate-800;
+  }
+  .PhoneInputCountry {
+    @apply mr-2 border-r border-slate-200 dark:border-slate-700 pr-2;
+  }
+  .PhoneInputCountrySelect option {
+    @apply bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100;
+  }
+  .react-datepicker-wrapper {
+    @apply w-full;
+  }
+  .react-datepicker__input-container input {
+    @apply flex h-10 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-50 dark:focus:ring-primary transition-all bg-white dark:bg-slate-900;
+  }
+}
