@@ -8,32 +8,30 @@ const getMergedData = () => {
     const raw = localStorage.getItem('safapply_db');
     if (raw) stored = JSON.parse(raw);
   } catch (e) {
-    console.error("[MockAPI] Failed to parse localStorage", e);
+    // Fail silently
   }
 
-  // CORE FIX: Always ensure institutions and programs are populated from the bundle if they are missing or empty
-  const institutions = (initialData.institutions && initialData.institutions.length > 0) 
-    ? initialData.institutions 
-    : (stored.institutions || []);
-    
-  const programs = (initialData.programs && initialData.programs.length > 0) 
-    ? initialData.programs 
-    : (stored.programs || []);
+  const institutions = (initialData?.institutions?.length > 0) ? initialData.institutions : (stored?.institutions || []);
+  const programs = (initialData?.programs?.length > 0) ? initialData.programs : (stored?.programs || []);
 
   const merged = {
-    ...initialData,    // Default to the full bundle
-    ...stored,         // Override with user's local data (like apps and logins)
-    institutions,      // Force the bundled institutions to ensure they are never empty
-    programs           // Force the bundled programs to ensure they are never empty
+    ...initialData,
+    ...stored,
+    institutions,
+    programs
   };
 
-  // Sync back to storage to ensure future calls are consistent
-  localStorage.setItem('safapply_db', JSON.stringify(merged));
+  try {
+    localStorage.setItem('safapply_db', JSON.stringify(merged));
+  } catch (e) {}
+  
   return merged;
 };
 
 const saveStorageData = (data) => {
-  localStorage.setItem('safapply_db', JSON.stringify(data));
+  try {
+    localStorage.setItem('safapply_db', JSON.stringify(data));
+  } catch (e) {}
 };
 
 const mockApi = axios.create({
@@ -42,29 +40,31 @@ const mockApi = axios.create({
 
 // Helper for Mock Responses
 const handleMockRequest = (config) => {
-  if (!config || !config.url) return null;
+  // EXTREME SAFETY: If config or URL is missing, abort mock
+  if (!config || typeof config.url !== 'string') return null;
   
   const data = getMergedData();
   const method = (config.method || 'get').toLowerCase();
   
-  // Strip the /api prefix if it exists, and any leading slashes
-  const cleanUrl = config.url.replace(/^\/api\//, '').replace(/^\//, ''); 
+  // Robust URL cleaning
+  const urlPath = config.url.split('?')[0]; // Remove query params for resource matching
+  const cleanUrl = urlPath.replace(/^\/api\//, '').replace(/^\//, ''); 
   const [resource, id] = cleanUrl.split('/');
   
   if (!data[resource]) {
-    console.warn(`[MockAPI] Resource "${resource}" not found in current data store. URL: ${config.url}`);
     return { data: [], status: 200, config };
   }
 
-  console.info(`[MockAPI] Delivering ${method.toUpperCase()} /${resource}${id ? '/' + id : ''} from guaranteed static-first store`);
+  // Remove .toUpperCase() to prevent any potential undefined access crash
+  console.info(`[MockAPI] Serving ${method} /${resource} from static-first store`);
 
   if (method === 'get') {
     let result = data[resource];
     if (id) {
-      result = result?.find(item => item.id === id);
+      result = result?.find(item => String(item.id) === String(id));
     } else if (config.params) {
       result = result?.filter(item => {
-        return Object.entries(config.params).every(([key, value]) => item[key] === value);
+        return Object.entries(config.params).every(([key, value]) => String(item[key]) === String(value));
       });
     }
     return { data: result || (id ? null : []), status: 200, config };
@@ -79,7 +79,7 @@ const handleMockRequest = (config) => {
   }
 
   if (method === 'put' || method === 'patch') {
-    const index = data[resource]?.findIndex(item => item.id === id);
+    const index = data[resource]?.findIndex(item => String(item.id) === String(id));
     if (index !== -1 && data[resource]) {
       data[resource][index] = { ...data[resource][index], ...config.data };
       saveStorageData(data);
@@ -90,31 +90,36 @@ const handleMockRequest = (config) => {
   return null;
 };
 
-// Check if we should force mock even before attempting (for production)
+// Check if we should force mock
 const isProduction = import.meta.env.PROD;
 const forceMock = isProduction || !window.location.hostname.includes('localhost');
 
 mockApi.interceptors.request.use(async (config) => {
-  // Always wait a bit to simulate network
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
   if (forceMock) {
-    const mockRes = handleMockRequest(config);
-    if (mockRes) return Promise.resolve(mockRes);
+    try {
+      const mockRes = handleMockRequest(config);
+      if (mockRes) return Promise.resolve(mockRes);
+    } catch (e) {
+      console.error("[MockAPI] Request interceptor error", e);
+    }
   }
-  
   return config;
 }, (error) => Promise.reject(error));
 
-// Fallback for failed requests (e.g. 404 or Network Error)
+// Fallback for failed requests
 mockApi.interceptors.response.use(
   response => response,
   async (error) => {
-    // If the request fails (404, connection error, etc.), fallback to mock
-    if (error.code === 'ERR_NETWORK' || error.response?.status === 404 || error.code === 'ECONNREFUSED' || !error.response) {
-      console.warn(`[MockAPI] Network call to ${error.config?.url} failed. Falling back to local data...`);
-      const mockRes = handleMockRequest(error.config);
-      if (mockRes) return Promise.resolve(mockRes);
+    // Comprehensive error check
+    const shouldFallback = !error.response || error.code === 'ERR_NETWORK' || error.response.status === 404;
+    
+    if (shouldFallback && error.config) {
+      try {
+        const mockRes = handleMockRequest(error.config);
+        if (mockRes) return Promise.resolve(mockRes);
+      } catch (e) {
+        console.error("[MockAPI] Response fallback error", e);
+      }
     }
     return Promise.reject(error);
   }
