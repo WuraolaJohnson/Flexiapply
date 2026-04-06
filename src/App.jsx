@@ -26,10 +26,8 @@ function Navbar() {
   
   return (
     <header className="flex justify-between items-center mb-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 transition-all">
-      <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary-dark to-slate-900 flex items-center justify-center font-bold text-white shadow-lg shadow-primary/20">
-          S
-        </div>
+      <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <img src="/favicon.png" alt="FlexiApply Logo" className="w-10 h-10 rounded-xl shadow-lg shadow-primary/20" />
         <div className="flex flex-col">
           <h1 className="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none">
             {portalName}

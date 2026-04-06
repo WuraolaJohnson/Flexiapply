@@ -76,6 +76,8 @@ export const initialData = {
       "submittedAt": "2026-03-22T14:48:57.873Z",
       "admissionScore": 0,
       "acceptanceLikelihood": "Low",
+      "programName": "B.Sc. Computer Science",
+      "institutionName": "Abubakar Tafawa Balewa University",
       "id": "VQ_GTprTVkg"
     },
     {
@@ -103,6 +105,8 @@ export const initialData = {
       "submittedAt": "2026-03-22T14:51:36.775Z",
       "admissionScore": 0,
       "acceptanceLikelihood": "Low",
+      "programName": "B.Eng. Mechanical Engineering",
+      "institutionName": "Abubakar Tafawa Balewa University",
       "id": "V-ChQsZd5rY"
     },
     {
@@ -130,6 +134,8 @@ export const initialData = {
       "submittedAt": "2026-03-22T19:01:17.785Z",
       "admissionScore": 0,
       "acceptanceLikelihood": "Low",
+      "programName": "LL.B. Law",
+      "institutionName": "University of Lagos",
       "id": "E0QVyEOF7qs"
     },
     {
@@ -157,6 +163,8 @@ export const initialData = {
       "submittedAt": "2026-04-04T14:14:33.604Z",
       "admissionScore": 0,
       "acceptanceLikelihood": "Low",
+      "programName": "MBBS Medicine",
+      "institutionName": "Babcock University",
       "id": "XXGX7hXuk-M"
     },
     {
@@ -185,6 +193,8 @@ export const initialData = {
       "submittedAt": "2026-04-04T14:54:59.550Z",
       "admissionScore": 86,
       "acceptanceLikelihood": "High",
+      "programName": "B.Sc. Computer Science",
+      "institutionName": "Abubakar Tafawa Balewa University",
       "id": "NB7GMPeohko"
     }
   ],

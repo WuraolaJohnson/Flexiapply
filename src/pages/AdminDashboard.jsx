@@ -68,6 +68,7 @@ export default function AdminDashboard() {
               <tr>
                 <th className="px-6 py-4">App ID</th>
                 <th className="px-6 py-4">Applicant Name</th>
+                <th className="px-6 py-4">Program</th>
                 <th className="px-6 py-4">GPA</th>
                 <th className="px-6 py-4">AI Score</th>
                 <th className="px-6 py-4">Likelihood</th>
@@ -86,6 +87,10 @@ export default function AdminDashboard() {
                   <tr key={app.id} className="border-b dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td className="px-6 py-4 font-medium dark:text-slate-300">{app.id}</td>
                     <td className="px-6 py-4 dark:text-slate-300">{app.personal.firstName} {app.personal.lastName}</td>
+                    <td className="px-6 py-4">
+                      <div className="text-slate-900 dark:text-slate-100 font-medium">{app.programName || 'N/A'}</div>
+                      <div className="text-xs text-slate-500">{app.institutionName || 'N/A'}</div>
+                    </td>
                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{app.academic.gpa}</td>
                     <td className="px-6 py-4 font-medium text-primary-dark dark:text-primary-light">{app.admissionScore || 'N/A'}</td>
                     <td className="px-6 py-4">

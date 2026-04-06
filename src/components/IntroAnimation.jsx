@@ -40,8 +40,9 @@ export default function IntroAnimation({ children }) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="text-center text-primary"
+              className="text-center text-primary flex flex-col items-center"
             >
+              <img src="/favicon.png" alt="FlexiApply Logo" className="w-20 h-20 mb-6 drop-shadow-[0_0_20px_rgba(59,130,246,0.3)]" />
               <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 uppercase">
                 FlexiApply
               </h1>

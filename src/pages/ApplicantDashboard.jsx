@@ -70,8 +70,12 @@ export default function ApplicantDashboard() {
                   <div>
                     <div className="text-sm font-medium text-slate-500 mb-1">Application ID: {app.id}</div>
                     <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-dark to-primary">
-                      {app.personal.firstName} {app.personal.lastName}
+                      {app.programName || 'Unknown Program'}
                     </h3>
+                    <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      {app.institutionName || 'Unknown Institution'}
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">Applicant: {app.personal.firstName} {app.personal.lastName}</div>
                     <div className="text-sm text-slate-600 dark:text-slate-400 mt-2">
                       Submitted: {new Date(app.submittedAt).toLocaleDateString()}
                     </div>
