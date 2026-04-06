@@ -4,9 +4,10 @@ import { Card, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import mockApi from '../api/mockApi';
+import { initialData } from '../api/initialData';
 
 export default function LandingPage() {
-  const [institutions, setInstitutions] = useState([]);
+  const [institutions, setInstitutions] = useState(initialData.institutions || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(true);
@@ -18,7 +19,9 @@ export default function LandingPage() {
     const fetchInstitutions = async () => {
       try {
         const response = await mockApi.get('/institutions');
-        setInstitutions(response.data);
+        if (response.data && response.data.length > 0) {
+          setInstitutions(response.data);
+        }
       } catch (error) {
         console.error("Failed to fetch institutions", error);
       } finally {

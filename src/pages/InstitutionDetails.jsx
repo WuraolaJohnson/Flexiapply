@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import mockApi from '../api/mockApi';
+import { initialData } from '../api/initialData';
 
 export default function InstitutionDetails() {
   const { id } = useParams();
@@ -18,10 +19,18 @@ export default function InstitutionDetails() {
           mockApi.get(`/institutions/${id}`),
           mockApi.get(`/programs?institutionId=${id}`)
         ]);
-        setInstitution(instRes.data);
-        setPrograms(progRes.data);
+        
+        // Use API data if available, otherwise fallback to static bundle
+        setInstitution(instRes.data || initialData.institutions.find(inst => inst.id === id));
+        setPrograms((progRes.data && progRes.data.length > 0) 
+          ? progRes.data 
+          : initialData.programs.filter(prog => prog.institutionId === id));
+          
       } catch (error) {
         console.error("Failed to fetch institution details", error);
+        // Fallback to static bundle if API fails
+        setInstitution(initialData.institutions.find(inst => inst.id === id));
+        setPrograms(initialData.programs.filter(prog => prog.institutionId === id));
       } finally {
         setLoading(false);
       }
